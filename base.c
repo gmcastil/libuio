@@ -279,7 +279,7 @@ struct uio_info_t *uio_find_by_uio_name (char *uio_name)
 		if (!strcmp (name, uio_name)) {
 			info = candidate;
 		} else {
-			free(candidate);
+			uio_free_info(candidate);
 		}
 	}
 	/* If we found a match, all but the matching one should be freed. If no
