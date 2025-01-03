@@ -187,8 +187,14 @@ void uio_free_info(struct uio_info_t* info)
 			free (info->name);
 		if (info->version)
 			free (info->version);
-		if (info->maps)
-			free (info->maps);
+		if (info->maps) {
+			for (int i = 0; i < info->maxmap; i++) {
+				if (info->maps[i].name) {
+					free(info->maps[i].name);
+				}
+			}
+			free(info->maps);
+		}
 		if (info->devname)
 			free (info->devname);
 		free (info);
@@ -235,7 +241,7 @@ struct uio_info_t **uio_find_devices ()
 	 * used to calculate the length to allocate, we are guaranteed that the
 	 * array will be NULL terminated.
 	 */
-	assert(info[nr] == NULL);
+	assert(info[nr - 1] == NULL);
 
 out:
 	for (i = 0; i < nr; i++)
