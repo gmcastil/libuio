@@ -22,7 +22,6 @@
 #include "config.h"
 #endif /* HAVE_CONFIG_H */
 
-#include <assert.h>
 #include <dirent.h>
 #include <errno.h>
 #include <fcntl.h>
@@ -213,7 +212,6 @@ struct uio_info_t **uio_find_devices ()
 	int i, t = 0, nr;
 
 	snprintf (sysfsname, sizeof (sysfsname), "%s/class/uio", sysfs);
-	/* This includes the two directories . and .. */
 	nr = scandir (sysfsname, &namelist, 0, alphasort);
 	if (nr < 0)
 	{
@@ -236,12 +234,6 @@ struct uio_info_t **uio_find_devices ()
 
 		info [t++] = create_uio_info (sysfsname, namelist [i]->d_name);
 	}
-	/* 
-	 * Because . and .. should have been in the original result which was
-	 * used to calculate the length to allocate, we are guaranteed that the
-	 * array will be NULL terminated.
-	 */
-	assert(info[nr - 1] == NULL);
 
 out:
 	for (i = 0; i < nr; i++)
@@ -268,29 +260,18 @@ struct uio_info_t *uio_find_by_uio_name (char *uio_name)
 	if (!uio_list)
 		return NULL;
 
-	/* 
-	 * Iterating over the elements returned from uio_find_devices() assumes
-	 * that either a match is found or the NULL sentinel is reached.
-	 */
 	for (list = uio_list; *list; list++)
 	{
 		struct uio_info_t *candidate = *list;
 
 		name = uio_get_name (candidate);
 
-		/* 
-		 * Free every entry in the result from uio_find_devices() except
-		 * the one that matches
-		 */
 		if (!strcmp (name, uio_name)) {
 			info = candidate;
 		} else {
 			uio_free_info(candidate);
 		}
 	}
-	/* If we found a match, all but the matching one should be freed. If no
-	 * match, then the entire result should be freed. In either case, we can
-	 * free the result from uio_find_devices() */
 	free (uio_list);
 
 	return info;
